@@ -45,22 +45,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <windows.h>
-#include <zlib.h>
+#include "zlib.h"
 #include "nipa.h"
 
-int main(int argc, char **argv)
+int _tmain(int argc, TCHAR **argv)
 {
     int i = 0, encryption = 0, mode = 0;
     
     printf("nipa\n\n");
     
-    if(argc > 1 && strlen(argv[1]) > 1 && argv[1][i++] == '-')
+    if(argc > 1 && _tcslen(argv[1]) > 1 && argv[1][i++] == _T('-'))
     {    
-        while(argv[1][i] != '\0')
+        while(argv[1][i] != _T('\0'))
         {
             switch(argv[1][i++])
             {
-                case 'x':
+                case _T('x'):
                     if(argc < 3)
                     {
                         printf("Invalid arguments for -x");
@@ -68,7 +68,7 @@ int main(int argc, char **argv)
                     }
                     mode = 1;
                     break;
-                case 'c':
+                case _T('c'):
                     if(argc < 4)
                     {
                         printf("Invalid arguments for -c");
@@ -76,12 +76,12 @@ int main(int argc, char **argv)
                     }
                     mode = 2;
                     break;
-                case 'h':
+                case _T('h'):
                     break;
-                case 'z':
+                case _T('z'):
                     NPAHead.compress = 1;
                     break;
-                case 'g':
+                case _T('g'):
                     if(argc < 4)
                     {
                         printf("Invalid arguments for -g");
@@ -137,14 +137,14 @@ int main(int argc, char **argv)
     
     if(encryption == 1)
     {    
-        for(i = 0; games[i][0] != '\0' && stricmp(games[i],argv[argc-1]) != 0; i++)
+        for(i = 0; games[i][0] != _T('\0') && _tcsicmp(games[i],argv[argc-1]) != 0; i++)
 		{
 			//printf("%d %s\n",i,games[i]);
 		}
         
-        if(games[i][0]=='\0')
+        if(games[i][0]==_T('\0'))
         {
-            printf("Unsupported game ID: %s\n",argv[argc-1]);
+            _tprintf(_T("Unsupported game ID: %s\n"),argv[argc-1]);
             return 0;
         }
         else
@@ -238,23 +238,23 @@ int crypt2(int curnum, char *name)
     return key&0xff;
 }
 
-void parsenpa(char *input, int encryption)
+void parsenpa(TCHAR *input, int encryption)
 {
     int i = 0, x = 0;
     
-    infile = fopen(input,"rb");
+    infile = _tfopen(input,_T("rb"));
     if(!infile)
     {
-        printf("Could not open %s",input);
+        _tprintf(_T("Could not open %s"),input);
         exit(1);
     }
     
-    for(i = 0; input[i] != '.' && input[i] != '\0'; i++);
+    for(i = 0; input[i] != _T('.') && input[i] != _T('\0'); i++);
     input[i] = 0x00;
     
     /* Create a directory based on the input file's name then use it for output */
-    mkdir(input);
-    chdir(input);
+    _tmkdir(input);
+    _tchdir(input);
     
     fread(NPAHead.head,1,7,infile);
     if(strncmp("NPA\x01",NPAHead.head,4) == 0)
@@ -297,16 +297,24 @@ void parsenpa(char *input, int encryption)
             fread(&NPAEntry[i].compsize,1,4,infile);
             fread(&NPAEntry[i].origsize,1,4,infile);
             
-            printf("%04d: %-50s 0x%08X [%08X]\n",i,NPAEntry[i].filename,NPAEntry[i].offset,NPAEntry[i].compsize);
+			{
+#if _UNICODE
+				TCHAR destinationPath[MAX_PATH];
+				MultiByteToWideChar(CODEPAGE_SHIFT_JIS,0,NPAEntry[i].filename,-1,destinationPath,MAX_PATH);
+#else
+				char *destinationPath = NPAEntry[i].filename;
+#endif
+				_tprintf(_T("%04d: %-50s 0x%08X [%08X]\n"),i,destinationPath,NPAEntry[i].offset,NPAEntry[i].compsize);
             
-            if(NPAEntry[i].type == 1)
-            {
-                mkdir(NPAEntry[i].filename);
-            }
-            else
-            {
-                extractnpa(i,ftell(infile));
-            }
+				if(NPAEntry[i].type == 1)
+				{
+					_tmkdir(destinationPath);
+				}
+				else
+				{
+					extractnpa(i,ftell(infile), destinationPath);
+				}
+			}
         }
     }
     else
@@ -315,7 +323,7 @@ void parsenpa(char *input, int encryption)
     }
 }
 
-void extractnpa(int i, int pos)
+void extractnpa(int i, int pos, TCHAR *destination)
 {
     unsigned char *buffer = (unsigned char*)calloc(NPAEntry[i].compsize,sizeof(char));
     FILE *outfile = NULL;
@@ -326,8 +334,11 @@ void extractnpa(int i, int pos)
         exit(1);
     }
     
-    outfile = fopen(NPAEntry[i].filename,"wb");    
-    
+	outfile = _tfopen(destination,_T("w")); 
+	if ( !outfile ) {
+		printf("--WARNING: Cannot write file. %s",strerror(errno));
+		return;
+	}
     fseek(infile,NPAEntry[i].offset+NPAHead.start+0x29,SEEK_SET);    
     fread(buffer,1,NPAEntry[i].compsize,infile);
     
@@ -369,12 +380,12 @@ void extractnpa(int i, int pos)
     fseek(infile,pos,SEEK_SET);
 }
 
-void createnpa(int count, char **inarr)
+void createnpa(int count, TCHAR **inarr)
 {
     int i = 0, x = 0;
     
-    strcat(origpath,inarr[0]);
-    strcat(origpath,"\\*");
+    _tcscat(origpath,inarr[0]);
+    _tcscat(origpath,_T("\\*"));
     
     printf("Parsing directory structure, this could take a moment...\n");
     parsedir(origpath);
@@ -389,7 +400,7 @@ void createnpa(int count, char **inarr)
     NPAHead.start += NPAHead.totalcount*0x15; /* DO NOT CHANGE */
     NPAEntry[0].offset = 0; /* Must initialize the first offset or it'll fuck everything up. */
     
-    outfile = fopen(inarr[1],"wb+");
+    outfile = _tfopen(inarr[1],_T("wb+"));
     
     /* Write the header */
     fwrite(NPAHead.head,1,7,outfile);
@@ -424,46 +435,54 @@ void createnpa(int count, char **inarr)
         free(encname);
     }
     
-    /* Write the file data */
-    for(i = 0; i < NPAHead.totalcount; i++)
-    {
-        if(NPAEntry[i].type == 2) /* File */
-        {
-            char tempstr[MAX_PATH];
-                        
-            printf("%04d: %-50s 0x%08X [%08X]\n",i,NPAEntry[i].filename,NPAEntry[i].offset,NPAEntry[i].origsize);
-            sprintf(tempstr,"%s%s",origpath,NPAEntry[i].filename); /* Prepare the file location string */
+	{
+		const int origpathLen = _tcslen(origpath);
+		/* Write the file data */
+		for(i = 0; i < NPAHead.totalcount; i++)
+		{
+			if(NPAEntry[i].type == 2) /* File */
+			{
+				/* Prepare the file location string */
+				TCHAR tempstr[MAX_PATH];
+				_tcscpy(tempstr, origpath);
+	#ifdef _UNICODE
+				MultiByteToWideChar(CODEPAGE_SHIFT_JIS,0,NPAEntry[i].filename,NPAEntry[i].nlength+1,tempstr+origpathLen,MAX_PATH-origpathLen);
+	#else
+				_tcscat(tempstr,NPAEntry[i].filename);
+	#endif
+				_tprintf(_T("%04d: %-50s 0x%08X [%08X]\n"),i,tempstr+origpathLen,NPAEntry[i].offset,NPAEntry[i].origsize);
             
-            infile = fopen(tempstr,"rb");
-            if(infile)
-            {
-                char *buffer = (char*)calloc(NPAEntry[i].origsize,sizeof(char));
+				infile = _tfopen(tempstr,_T("rb"));
+				if(infile)
+				{
+					Byte *buffer = (Byte*)calloc(NPAEntry[i].origsize,sizeof(Byte));
                 
-                fread(buffer,1,NPAEntry[i].origsize,infile);
+					fread(buffer,1,NPAEntry[i].origsize,infile);
                 
-                if(NPAHead.compress == 1)
-                {
-                    char *zbuffer = (char*)calloc(NPAEntry[i].origsize,sizeof(char)); /* Second buffer for zlib */
+					if(NPAHead.compress == 1)
+					{
+						Byte *zbuffer = (Byte*)calloc(NPAEntry[i].origsize,sizeof(Byte)); /* Second buffer for zlib */
                 
-                    compress(zbuffer,&NPAEntry[i].compsize,buffer,NPAEntry[i].origsize);
-                    fwrite(zbuffer,1,NPAEntry[i].compsize,outfile); /* I feel there might be a better way to do this... */
+						compress(zbuffer,&NPAEntry[i].compsize,buffer,NPAEntry[i].origsize);
+						fwrite(zbuffer,1,NPAEntry[i].compsize,outfile); /* I feel there might be a better way to do this... */
                     
-                    free(zbuffer);
-                }
-                else
-                {
-                    fwrite(buffer,1,NPAEntry[i].origsize,outfile);
-                }
+						free(zbuffer);
+					}
+					else
+					{
+						fwrite(buffer,1,NPAEntry[i].origsize,outfile);
+					}
                     
-                fclose(infile);
-                free(buffer);
-            }
-            else
-            {
-                printf("Could not open %s\n",tempstr);
-            }
-        }
-    }
+					fclose(infile);
+					free(buffer);
+				}
+				else
+				{
+					_tprintf(_T("Could not open %s\n"),tempstr);
+				}
+			}
+		}
+	}
     
     /*
      * Fix the header if it's a zlib'd file.
@@ -495,42 +514,56 @@ void createnpa(int count, char **inarr)
  * QUALITY ENDS HERE!
  * Don't look. Seriously.
  */
-void addentry(char *path, char *name, int id, int type, int subdir)
+void addentry(TCHAR *path, TCHAR *name, int id, int type, int subdir)
 {
-    char *temp, *temp2;
+    TCHAR *relativeDir, *temp2;
     int i = 0;
     FILE *tempf;
-    
-    temp = (char*)calloc(strlen(path)+1,sizeof(char));    
-    temp2 = (char*)calloc(strlen(path)+strlen(name)+1,sizeof(char));    
+	int pathLen = _tcslen(path);
+    int a = sizeof(*NPAEntry);
+    temp2 = (TCHAR*)calloc(pathLen+_tcslen(name)+1,sizeof(TCHAR));
     NPAEntry = realloc(NPAEntry,(NPAHead.totalcount+1)*0x1c); /* Don't remove this +1 here, it causes bad things to happen as I found out at 6 in the morning */
-    NPAEntry[NPAHead.totalcount].filename = calloc(strlen(name)+strlen(path)+1,sizeof(char));
     NPAEntry[NPAHead.totalcount].compsize = 0;
     NPAEntry[NPAHead.totalcount].origsize = 0;
     
-    if(path[strlen(path)-1] == '*')
+    if(path[pathLen-1] == '*')
     {
-        path[strlen(path)-1] = 0x00; /* Strip the trailing wildcard if it exists, we don't want this in our table */
+        path[pathLen-1] = 0x00; /* Strip the trailing wildcard if it exists, we don't want this in our table */
+		--pathLen;
     }
     
     /*
      * Now, remove the original path since it can't be in the archive's table
      * Probably a noobish way to do this but whatever
      */
-    for(i = 0; i < strlen(path)-strlen(origpath); i++)
-    {
-        temp[i] = path[strlen(origpath)+i];
-    }
-    
-    strcat(NPAEntry[NPAHead.totalcount].filename,temp);
-    strcat(NPAEntry[NPAHead.totalcount].filename,name);
-    
-    NPAHead.start += strlen(NPAEntry[NPAHead.totalcount].filename);
+	relativeDir = path + _tcslen(origpath);
+	{
+		const int relativePathSz = _tcslen(relativeDir) + _tcslen(name) + 1;
+#ifdef _UNICODE
+		TCHAR relativePathBuffer[MAX_PATH];
+		BOOL usedDefault = FALSE;
+		int sz;
+		
+		_tcscpy(relativePathBuffer,relativeDir);
+		_tcscat(relativePathBuffer,name);
+		
+		sz = WideCharToMultiByte(CODEPAGE_SHIFT_JIS,0,relativePathBuffer,relativePathSz,NULL,0,NULL,&usedDefault);
+		NPAEntry[NPAHead.totalcount].filename = (char*)calloc(sz, sizeof(char));
+		WideCharToMultiByte(CODEPAGE_SHIFT_JIS,0,relativePathBuffer,relativePathSz,NPAEntry[NPAHead.totalcount].filename,sz,NULL,NULL);
+#else
+		NPAEntry[NPAHead.totalcount].filename = (char*)calloc(relativePathSz, sizeof(char));
+		_tcscat(NPAEntry[NPAHead.totalcount].filename,relativeDir);
+		_tcscat(NPAEntry[NPAHead.totalcount].filename,name);
+#endif
+	}
+
+	_tcscpy(temp2,path);
+    _tcscat(temp2,name);
+
     NPAEntry[NPAHead.totalcount].nlength = strlen(NPAEntry[NPAHead.totalcount].filename);    
+    NPAHead.start += NPAEntry[NPAHead.totalcount].nlength;
     NPAEntry[NPAHead.totalcount].fileid = id;
     
-    strcat(temp2,path);
-    strcat(temp2,name);
 
     if(type != 0)
     {
@@ -543,14 +576,14 @@ void addentry(char *path, char *name, int id, int type, int subdir)
     
     if(NPAEntry[NPAHead.totalcount].type == 2)
     {
-        tempf = fopen(temp2,"rb");
+        tempf = _tfopen(temp2,_T("rb"));
         
-        if(!temp)
+        if(!tempf)
         {
-            printf("Could not open %s\n",temp2); /* This should not occur unless the file somehow goes missing between finding it in the directory and being checked here. */
+            _tprintf(_T("Could not open %s\n"),temp2); /* This should not occur unless the file somehow goes missing between finding it in the directory and being checked here. */
             exit(1); /* In that case, something went horribly wrong. */
         }
-        
+
         fseek(tempf,0,SEEK_END);
         
         NPAEntry[NPAHead.totalcount].compsize = ftell(tempf);
@@ -573,7 +606,7 @@ void addentry(char *path, char *name, int id, int type, int subdir)
     NPAHead.totalcount++;
 }
 
-void parsedir(char *path)
+void parsedir(TCHAR *path)
 {
     /* Win32 API ftl MSDN to the rescue at least */
     WIN32_FIND_DATA fd;
@@ -583,7 +616,7 @@ void parsedir(char *path)
     handle = FindFirstFile(path,&fd);
     do 
     {
-        if(strcmp(fd.cFileName,".") != 0 && strcmp(fd.cFileName,"..") != 0 && !(fd.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN)) /* Skip cur dir, prev dir, and any hidden files */
+        if(_tcscmp(fd.cFileName,_T(".")) != 0 && _tcscmp(fd.cFileName,_T("..")) != 0 && !(fd.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN)) /* Skip cur dir, prev dir, and any hidden files */
         {                
             if(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
             {
@@ -594,11 +627,11 @@ void parsedir(char *path)
             
             if(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
             {
-                char *name = (char*)calloc(MAX_PATH,sizeof(char));
+                TCHAR *name = (TCHAR*)calloc(MAX_PATH,sizeof(TCHAR));
                 
-                strcat(name,path);
-                strcat(name,fd.cFileName);
-                strcat(name,"\\*");
+                _tcscat(name,path);
+                _tcscat(name,fd.cFileName);
+                _tcscat(name,_T("\\*"));
                 
                 NPAHead.foldercount++;
                 parsedir(name);

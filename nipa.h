@@ -1,3 +1,6 @@
+#include <tchar.h>
+#define CODEPAGE_SHIFT_JIS 932
+
 int crypt(int, int);
 int crypt2(int, char*);
 int newid();
@@ -36,7 +39,7 @@ struct _npaentry
 } *NPAEntry;
 
 int offset = 0, subdir = 0, id = 0;
-char origpath[MAX_PATH];
+TCHAR origpath[MAX_PATH];
 
 FILE *infile,*outfile;
 
@@ -46,8 +49,8 @@ FILE *infile,*outfile;
  * cycles to generate them each time you run the program.
  */
 
-char games[][20] = { "ChaosHead", "ChaosHeadTr1", "ChaosHeadTr2", "MuramasaTr", "Muramasa", "Sumaga", "Django", "DjangoTr",
-                     "Lamento", "LamentoTr", "sweetpool", "SumagaSP", "Demonbane", "MuramasaAD", "Axanael", "Kikokugai", "SonicomiTr2", "\0" };
+TCHAR games[][20] = { _T("ChaosHead"), _T("ChaosHeadTr1"), _T("ChaosHeadTr2"), _T("MuramasaTr"), _T("Muramasa"), _T("Sumaga"), _T("Django"), _T("DjangoTr"),
+                     _T("Lamento"), _T("LamentoTr"), _T("sweetpool"), _T("SumagaSP"), _T("Demonbane"), _T("MuramasaAD"), _T("Axanael"), _T("Kikokugai"), _T("SonicomiTr2"), _T("\0") };
 enum { CHAOSHEAD = 0, CHAOSHEADTR1, CHAOSHEADTR2, MURAMASATR, MURAMASA, SUMAGA, DJANGO, DJANGOTR,
 	LAMENTO, LAMENTOTR, SWEETPOOL, SUMAGASP, DEMONBANE, MURAMASAAD, AXANAEL, KIKOKUGAI, SONICOMITR2 };
 unsigned char keytbl[][0x100] = {    
