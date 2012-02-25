@@ -1,0 +1,11 @@
+vc10/*.sdf
+vc10/*.opensdf
+vc10/ipch
+vc10/*.suo
+vc10/*.user
+vc10/Debug
+vc10/Release
+*~
+.Trash
+.DS_Store
+*.swp
