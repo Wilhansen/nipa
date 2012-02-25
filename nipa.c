@@ -137,10 +137,7 @@ int _tmain(int argc, TCHAR **argv)
 
 	if(encryption == 1)
 	{    
-		for(i = 0; games[i][0] != _T('\0') && _tcsicmp(games[i],argv[argc-1]) != 0; i++)
-		{
-			//printf("%d %s\n",i,games[i]);
-		}
+		for(i = 0; games[i][0] != _T('\0') && _tcsicmp(games[i],argv[argc-1]) != 0; i++);
 
 		if(games[i][0]==_T('\0'))
 		{
@@ -179,14 +176,10 @@ int crypt(int curnum, int curfile)
 	int key = 0xFC*curnum;
 	int temp = 0;
 
-	if(NPAHead.gameid!=8 && NPAHead.gameid!=9)
-	{
-		temp = NPAHead.key1 * NPAHead.key2;
-	}
-	else
-	{
+	if ((NPAHead.gameid==LAMENTO && NPAHead.encrypt) || (NPAHead.gameid==LAMENTOTR && NPAHead.encrypt))
 		temp = NPAHead.key1 + NPAHead.key2;
-	}
+	else
+		temp = NPAHead.key1 * NPAHead.key2;
 
 	key -= temp >> 0x18;
 	key -= temp >> 0x10;
