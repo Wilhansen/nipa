@@ -45,7 +45,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <windows.h>
-#include "zlib.h"
+#include "zlib/zlib.h"
 #include "nipa.h"
 
 int _tmain(int argc, TCHAR **argv)
