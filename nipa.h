@@ -12,7 +12,7 @@ void extractnpa(int, int);
 void parsedir(char*);
 void parsenpa(char *, int);
 
-struct _npahead
+typedef struct _npahead
 {
 	char head[7];        /* MUST start with NPA\x01\x00 or it gets flagged as not an NPA archive. The extra 2 are just nulls. */
 	int key1;        /* Keys required for decryption purposes */
@@ -25,9 +25,9 @@ struct _npahead
 	long null;        /* Almost certain these 8 bytes do nothing. Set some BPs on the spots in the memory and they are never touched. */
 	int start;        /* Starting offset for data. Filetable - 0x29 (header) usually */
 	int gameid;        /* Not set in the header itself but it's an appropriate place to store the the game ID used for encryption */
-} NPAHead;
+} NPAHEAD;
 
-struct _npaentry
+typedef struct _npaentry
 {
 	int nlength;        /* Name length */
 	char *filename;     /* Size based on nlength */
@@ -36,12 +36,7 @@ struct _npaentry
 	int offset;         
 	int compsize;         /* Orig filesize */
 	int origsize;         /* Compressed filesize */
-} *NPAEntry;
-
-int offset = 0, subdir = 0, id = 0;
-TCHAR origpath[MAX_PATH];
-
-FILE *infile,*outfile;
+} NPAENTRY;
 
 /*
 * All keys listed are the generated form and not the original form.

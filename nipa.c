@@ -2,42 +2,6 @@
 * nipa
 * Updated 05/28/2011
 *
-* Nitro+ - http://www.nitroplus.co.jp/
-* Nitro+ CHiRAL - http://www.nitrochiral.com/
-* 
-* Description:
-* This is a tool made for Nitro+'s NPA archives which is used by the N2System
-* engine. The engine is used in 6 games total between Nitro+ and Nitro+ CHiRAL.
-* There are 2 versions of the NPA archive that I know of. As of v1, only the
-* most common version is supported. I plan to support the rest in the future
-* for the sake of completion.
-*
-* Documentation:
-* See http://amaterasu.is.moelicious.be/nipa/npadoc.html for detailed documentation
-* of the NPA archive format.
-*
-* Supported Games:
-* Nitro+
-*     Chaos;Head
-*     Chaos;Head Trial 1
-*     Chaos;Head Trial 2
-*     FullMetalDaemon MURAMASA
-*     FullMetalDaemon MURAMASA Janen Hen (MuramasaAD)
-*     FullMetalDaemon MURAMASA Trial
-*     Sumaga
-*     Demonbane The Best
-*     Axanael/Axanael Trial
-*     SonicomiTr1
-* Nitro+ CHiRAL
-*     Lamento -Beyond the Void-
-*     sweet pool
-*     Zoku Satsuriku no Django
-*
-* Unsupported Games:
-*     Lamento -Beyond the Void- Trial?
-*        Not tested, currently unknown.
-*        Header unencrypted in (trial was it? I can't remember)
-*
 * You're free to use this code in any way you want, as long as you you provide
 * credit in either the form of this source code or by name.
 *******************************************************************************/
@@ -48,9 +12,18 @@
 #include "zlib/zlib.h"
 #include "nipa.h"
 
+NPAHEAD NPAHead;
+NPAENTRY *NPAEntry;
+
+int offset = 0, subdir = 0, id = 0;
+TCHAR origpath[MAX_PATH];
+
+FILE *infile,*outfile;
+
+enum { MODE_HELP, MODE_EXTRACT, MODE_CREATE };
 int _tmain(int argc, TCHAR **argv)
 {
-	int i = 0, encryption = 0, mode = 0;
+	int i = 0, encryption = 0, mode = MODE_HELP;
 
 	printf("nipa\n\n");
 
@@ -66,7 +39,7 @@ int _tmain(int argc, TCHAR **argv)
 					printf("Invalid arguments for -x");
 					return 1;
 				}
-				mode = 1;
+				mode = MODE_EXTRACT;
 				break;
 			case _T('c'):
 				if(argc < 4)
@@ -74,9 +47,10 @@ int _tmain(int argc, TCHAR **argv)
 					printf("Invalid arguments for -c");
 					return 1;
 				}
-				mode = 2;
+				mode = MODE_CREATE;
 				break;
 			case _T('h'):
+				mode = MODE_HELP;
 				break;
 			case _T('z'):
 				NPAHead.compress = 1;
@@ -96,7 +70,7 @@ int _tmain(int argc, TCHAR **argv)
 		}
 	}
 
-	if(mode==0 || mode==3)
+	if(mode==MODE_HELP)
 	{
 		printf("usage:\n"\
 			"General\n"\
@@ -150,11 +124,11 @@ int _tmain(int argc, TCHAR **argv)
 		}
 	}
 
-	if(mode == 1) /* Extraction mode */
+	if(mode == MODE_EXTRACT)
 	{
 		parsenpa(argv[2],encryption);
 	}
-	else if(mode == 2) /* Creation mode */
+	else if(mode == MODE_CREATE)
 	{
 		createnpa(argc-2,argv+2); /* Get rid of the name and options */
 	}
@@ -222,7 +196,7 @@ int crypt2(int curnum, char *name)
 
 	key  = key1 * i;
 
-	if(NPAHead.gameid!=8 && NPAHead.gameid!=9) // if the game is not Lamento
+	if(NPAHead.gameid!=LAMENTO && NPAHead.gameid!=LAMENTOTR) // if the game is not Lamento
 	{
 		key += key2;
 		key *= NPAEntry[curnum].origsize;
@@ -393,7 +367,7 @@ void createnpa(int count, TCHAR **inarr)
 	NPAHead.start += NPAHead.totalcount*0x15; /* DO NOT CHANGE */
 	NPAEntry[0].offset = 0; /* Must initialize the first offset or it'll fuck everything up. */
 
-	outfile = _tfopen(inarr[1],_T("wb+"));
+	outfile = _tfopen(inarr[1],_T("wb"));
 
 	/* Write the header */
 	fwrite(NPAHead.head,1,7,outfile);
