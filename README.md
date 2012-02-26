@@ -1,7 +1,7 @@
 #nipa
 
-Nitro+ — <http://www.nitroplus.co.jp/>  
-Nitro+ CHiRAL — <http://www.nitrochiral.com/>
+Nitro+ â€” <http://www.nitroplus.co.jp/>  
+Nitro+ CHiRAL â€” <http://www.nitrochiral.com/>
  
 ## Description (from comments)
 This is a tool made for Nitro+'s NPA archives which is used by the N2System engine. The engine is used in 6 games total between Nitro+ and Nitro+ CHiRAL. It supports unpacking and repacking even if the format is archived and/or encrypted.
@@ -12,41 +12,43 @@ See [npadoc.html](http://www.tsukuru.info/nipa/npadoc.html) (also archived here)
 For the uninitiated, this is a non-interactive command-line program so this is best run from the command line.
 
 * General
-    * `-h` — Help. Displays this information.
+    * `-h` â€” Displays help information and lists Game IDs.
 * Extraction
-    * `-x (file)` — Extract NPA archive
-    * `-g (id)` — Game ID for encryption (if applicable). Defaults to ChaosHead if no encryption is entered
+    * `-x (file)` â€” Extract NPA archive
+    * `-g (id)` â€” Game ID for encryption (if applicable). Defaults to ChaosHead if no encryption is entered
 * Creation
-    * `-c (folder) (output file)` — Create archive
-    * `-z` — Compress files
+    * `-c (folder) (output file)` â€” Create archive
+    * `-z` â€” Compress files
 
 **DO NOT** compress a CG folder. There is little change in size by doing so and it messes up the engine. This is a problem with the engine and Nitro+ doesn't compress their CG files because of it.
 
 ## Examples
-`-x nss.npa` — Extract nss.npa into the folder "nss"  
-`-xg nss.npa MuramasaTr` — Extract nss.npa into the folder "nss" using the Muramasa Trial encryption  
-`-c nss nss.npa` — Create an archive out of the folder "nss"  
-`-cz nss nss.npa` — Create a compressed archive out of the folder "nss"
-
-(Type `-h` in the program to see the list of game IDs to use for decryption/encryption.)
+`-x nss.npa` â€” Extract nss.npa into the folder "nss"  
+`-xg nss.npa MuramasaTr` â€” Extract nss.npa into the folder "nss" using the Muramasa Trial encryption  
+`-c nss nss.npa` â€” Create an archive out of the folder "nss"  
+`-cz nss nss.npa` â€” Create a compressed archive out of the folder "nss"
 
 ## Supported Games
+Game IDs in `code` formatting.
 
 * Nitro+
-    * Chaos;Head
-    * Chaos;Head Trial 1
-    * Chaos;Head Trial 2
-    * FullMetalDaemon MURAMASA
-    * FullMetalDaemon MURAMASA Janen Hen (MuramasaAD)
-    * FullMetalDaemon MURAMASA Trial
-    * Sumaga
-    * Demonbane The Best
-    * Axanael/Axanael Trial
-    * SonicomiTr1
+    * Chaos;Head `ChaosHead`
+    * Chaos;Head Trial 1 `ChaosHeadTr1`
+    * Chaos;Head Trial 2 `ChaosHeadTr2`
+    * FullMetalDaemon MURAMASA `Muramasa`
+    * FullMetalDaemon MURAMASA Janen Hen `MuramasaAD`
+    * FullMetalDaemon MURAMASA Trial `MuramasaTr`
+    * Kikokugai `Kikokugai`
+    * Sumaga `Sumaga`
+    * Sumaga Special `SumagaSP`
+    * Demonbane The Best ` Demonbane`
+    * Axanael/Axanael Trial `Axanael`
+    * SonicomiTr1 `SonicomiTr2`
+    * Zoku Satsuriku no Django `Django`
 * Nitro+ CHiRAL
-    * Lamento -Beyond the Void-
-    * sweet pool
-    * Zoku Satsuriku no Django
+    * Lamento -Beyond the Void- `Lamento`
+    * sweet pool `sweetpool`
+
 
 ## Credits
 Minagi from the [NovelNews.net forum](http://forums.novelnews.net/showthread.php?t=35621) for reverse-engineering the npa format and writing the original code.
