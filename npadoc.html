@@ -1,0 +1,532 @@
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+</head>
+<body>
+<a name="top"></a>
+NPA V3 File format documentation<br>
+<br>
+<br>
+<a href="#history">NPA History</a><br>
+<a href="#header">Header</a><br>
+<a href="#filetable">File Table</a><br>
+<a href="#data">Data</a><br>
+<a href="#encryption">Encryptions</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#headerenc">Header encryption</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#dataenc">Data encryption</a><br>
+<a href="#patches">Creating Patches</a><br>
+<a href="#gamelist">Game List</a><br>
+<br>
+<a name="history"></a>
+<h2>NPA History</h2>
+<b>V1 - November 2006</b><br>
+First used in Lamento -Beyond the Void-.<br>
+Lamento's demo featured an even earlier version of the format which did not encrypt the header, among other things.<br>
+Lamento's full version is different in a few ways compared to V3 but I haven't looked into it yet.<br>
+<br>
+<b>V2 - July 2007</b><br>
+First used in Zoku Satsuriku no Django -Jigoku no Shoukinkubi-.<br>
+Encryption methods are different? Incompatible with V3.<br>
+<br>
+<b>V3 - April 2008</b><br>
+First used in Chaos;Head.<br>
+All information in this file is for this version.<br>
+<br>
+<a name="header"></a>
+<h2>Header</h2>
+The header consists of 41 bytes (0x29). Endianness is little endian.
+<table border="1" cellpadding="2">
+	<tbody><tr>
+		<td>Name</td>
+		<td>Length</td>
+		<td>Notes</td>
+	</tr>
+	<tr>
+		<td>Header</td>
+		<td>7 bytes</td>
+		<td>\x4E\x50\x41\x01\x00\x00\x00	</td>
+	</tr>
+	<tr>
+		<td>Key 1</td>
+		<td>dword</td>
+		<td>Changes per file</td>
+	</tr>
+	<tr>
+		<td>Key 2</td>
+		<td>dword</td>
+		<td>Changes per file</td>
+	</tr>
+	<tr>
+		<td>Compression</td>
+		<td>word</td>
+		<td>1 = compressed</td>
+	</tr>
+	<tr>
+		<td>Encryption</td>
+		<td>word</td>
+		<td>1 = encrypted</td>
+	</tr>
+	<tr>
+		<td>Total entries</td>
+		<td>dword</td>
+		<td>File count + Folder count</td>
+	</tr>
+	<tr>
+		<td>Folder count</td>
+		<td>dword</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>File count</td>
+		<td>dword</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>Null</td>
+		<td>qword</td>
+		<td>This can be anything. The game skips over this section.</td>
+	</tr>
+	<tr>
+		<td>Data start</td>
+		<td>dword</td>
+		<td>This is without the header, so add 0x29 to it.</td>
+	</tr>
+</tbody></table>
+<a href="#top">Top</a><br>
+<br>
+<a name="filetable"></a>
+<h2>File Table</h2>
+The file table consists of 21+x bytes (0x15+x). Endianness is little endian.
+<table border="1" cellpadding="2">
+	<tbody><tr>
+		<td>Name</td>
+		<td>Length</td>
+		<td>Notes</td>
+	</tr>
+	<tr>
+		<td>Name length</td>
+		<td>dword</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>Name</td>
+		<td>x bytes</td>
+		<td>This can be encrypted or plain text depending on the game.</td>
+	</tr>
+	<tr>
+		<td>File type</td>
+		<td>word</td>
+		<td>1 = folder, 2 = file</td>
+	</tr>
+	<tr>
+		<td>ID</td>
+		<td>dword</td>
+		<td>Ties it to a folder. See comments below.</td>
+	</tr>
+	<tr>
+		<td>Offset</td>
+		<td>dword</td>
+		<td>Offset from data offset (see header)</td>
+	</tr>
+	<tr>
+		<td>Compressed Size</td>
+		<td>dword</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>Original Size</td>
+		<td>dword</td>
+		<td></td>
+	</tr>
+</tbody></table>
+<br>
+About the ID. It's a bit hard for me to explain properly but an entire 
+folder is parsed before giving it an ID. Each time you go into a folder,
+ the ID increases.<br>
+Since I have trouble explaining it, here are some examples so you can get an idea.<br>
+<br>
+An NPA file without any folders in it:
+<br>
+<table border="1" cellpadding="2">
+	<tbody><tr>
+		<td>Name</td>
+		<td>ID</td>
+	</tr>
+	<tr>
+		<td>0_boot.nss</td>
+		<td>0</td>
+	</tr>
+	<tr>
+		<td>0_boot_開始スクリプト.nss</td>
+		<td>0</td>
+	</tr>
+	<tr>
+		<td>function.nss</td>
+		<td>0</td>
+	</tr>
+	<tr>
+		<td>function_cockpit.nss</td>
+		<td>0</td>
+	</tr>
+	<tr>
+		<td>function_move.nss</td>
+		<td>0</td>
+	</tr>
+</tbody></table>
+<br>
+An NPA file with folders:
+<br>
+<table border="1" cellpadding="2">
+	<tbody><tr>
+		<td>Name</td>
+		<td>ID</td>
+	</tr>
+	<tr>
+		<td>anime</td>
+		<td>0</td>
+	</tr>
+	<tr>
+		<td>anime\blood01a_1.png</td>
+		<td>1</td>
+	</tr>
+	<tr>
+		<td>anime\blood01a_10.png</td>
+		<td>1</td>
+	</tr>
+	<tr>
+		<td>anime\center</td>
+		<td>1</td>
+	</tr>
+	<tr>
+		<td>anime\center\blooda_0.png</td>
+		<td>2</td>
+	</tr>
+	<tr>
+		<td>anime\center\blooda_1.png</td>
+		<td>2</td>
+	</tr>
+	<tr>
+		<td>anime\left</td>
+		<td>1</td>
+	</tr>
+	<tr>
+		<td>anime\left\blood_c_0.png</td>
+		<td>3</td>
+	</tr>
+	<tr>
+		<td>anime\left\blood_c_1.png</td>
+		<td>3</td>
+	</tr>
+	<tr>
+		<td>anime\right</td>
+		<td>1</td>
+	</tr>
+	<tr>
+		<td>anime\right\blood_b_0.png</td>
+		<td>4</td>
+	</tr>
+	<tr>
+		<td>anime\right\blood_b_1.png</td>
+		<td>4</td>
+	</tr>
+	<tr>
+		<td>bg</td>
+		<td>0</td>
+	</tr>
+	<tr>
+		<td>bg\bg001_空a_01.jpg</td>
+		<td>5</td>
+	</tr>
+	<tr>
+		<td>bg\bg001_空a_02.jpg</td>
+		<td>5</td>
+	</tr>
+	<tr>
+		<td>bg\resize</td>
+		<td>5</td>
+	</tr>
+	<tr>
+		<td>bg\resize\bg001_空a_01.jpg</td>
+		<td>6</td>
+	</tr>
+	<tr>
+		<td>bg\resize\bg001_空a_02.jpg</td>
+		<td>6</td>
+	</tr>
+	<tr>
+		<td>cp</td>
+		<td>0</td>
+	</tr>
+	<tr>
+		<td>cp\shin</td>
+		<td>7</td>
+	</tr>
+	<tr>
+		<td>cp\shin\lockon</td>
+		<td>8</td>
+	</tr>
+	<tr>
+		<td>cp\shin\lockon\レティクル01.png</td>
+		<td>9</td>
+	</tr>
+	<tr>
+		<td>cp\shin\lockon\レティクル02.png</td>
+		<td>9</td>
+	</tr>
+	<tr>
+		<td>cp\shin\エネミーhp</td>
+		<td>8</td>
+	</tr>
+	<tr>
+		<td>cp\shin\エネミーhp\hp-01.png</td>
+		<td>a</td>
+	</tr>
+	<tr>
+		<td>cp\shin\エネミーhp\hp-02.png</td>
+		<td>a</td>
+	</tr>
+</tbody></table>
+<a href="#top">Top</a><br>
+<br>
+<a name="data"></a>
+<h2>Data</h2>
+There's not much special with the data. If the file has the compressed 
+flag stored, the data will be compressed with zlib. If the encrypted 
+flag is set, the data must first be decrypted.<br>
+<b>DO NOT</b> compress a CG folder. If you compress PNGs, the game will 
+crash. I can only guess why this is exactly since I haven't looked into 
+it much, but I don't think the engine takes kindly to zlib on zlib. 
+Nitro+ doesn't compress their CG files so this pretty much confirms my 
+ideas about it being an engine breaker.<br>
+<a href="#top">Top</a><br>
+<a name="encryption"></a>
+<br>
+<h2>Encryption</h2>	
+Now to the fun part. N2System uses 2 encryptions, one for the header and one for the file data. Below are code samples for each.
+
+<a name="headerenc"></a>
+<h4>Header encryption</h4>
+This is a pretty straight forward encryption and is symmetrical so there's little messing around with it.<br>
+Here's the ASM version from the Muramasa Trial EXE:<br>
+<pre>00401A7F  |. 8B76 08        ||MOV ESI,DWORD PTR DS:[ESI+8]
+00401A82  |. 8B8C24 2801000&gt;||MOV ECX,DWORD PTR SS:[ESP+128]
+00401A89  |. 0FAF71 0C      ||IMUL ESI,DWORD PTR DS:[ECX+C]
+00401A8D  |. 8AC3           ||MOV AL,BL
+00401A8F  |. B1 FC          ||MOV CL,0FC
+00401A91  |. F6E9           ||IMUL CL
+00401A93  |. 8AC8           ||MOV CL,AL
+00401A95  |. 8BD6           ||MOV EDX,ESI
+00401A97  |. C1EA 18        ||SHR EDX,18
+00401A9A  |. 2ACA           ||SUB CL,DL
+00401A9C  |. 8BD6           ||MOV EDX,ESI
+00401A9E  |. C1EA 10        ||SHR EDX,10
+00401AA1  |. 2ACA           ||SUB CL,DL
+00401AA3  |. 8BC6           ||MOV EAX,ESI
+00401AA5  |. 8BB424 2801000&gt;||MOV ESI,DWORD PTR SS:[ESP+128]
+00401AAC  |. C1E8 08        ||SHR EAX,8
+00401AAF  |. 2AC8           ||SUB CL,AL
+00401AB1  |. 8A46 08        ||MOV AL,BYTE PTR DS:[ESI+8]
+00401AB4  |. F66E 0C        ||IMUL BYTE PTR DS:[ESI+C]
+00401AB7  |. 2AC8           ||SUB CL,AL
+00401AB9  |. 8B4424 14      ||MOV EAX,DWORD PTR SS:[ESP+14]
+00401ABD  |. 8BD0           ||MOV EDX,EAX
+00401ABF  |. C1EA 18        ||SHR EDX,18
+00401AC2  |. 2ACA           ||SUB CL,DL
+00401AC4  |. 8BD0           ||MOV EDX,EAX
+00401AC6  |. C1EA 10        ||SHR EDX,10
+00401AC9  |. 2ACA           ||SUB CL,DL
+00401ACB  |. 8BD0           ||MOV EDX,EAX
+00401ACD  |. C1EA 08        ||SHR EDX,8
+00401AD0  |. 2ACA           ||SUB CL,DL
+00401AD2  |. 2AC8           ||SUB CL,AL
+00401AD4  |. 000F           ||ADD BYTE PTR DS:[EDI],CL
+00401AD6  |. 83C3 01        ||ADD EBX,1
+00401AD9  |. 3B5C24 18      ||CMP EBX,DWORD PTR SS:[ESP+18]
+</pre>
+
+And here's my version of it:
+<pre>int crypt(int curnum, int curfile)
+{
+	int key = 0xFC*curnum;
+	
+	key -= NPAHead.key1 * NPAHead.key2 &gt;&gt; 0x18;
+	key -= NPAHead.key1 * NPAHead.key2 &gt;&gt; 0x10;
+	key -= NPAHead.key1 * NPAHead.key2 &gt;&gt; 0x08;
+	key -= NPAHead.key1 * NPAHead.key2  &amp; 0xff;
+	
+	key -= curfile &gt;&gt; 0x18;
+	key -= curfile &gt;&gt; 0x10;
+	key -= curfile &gt;&gt; 0x08;
+	key -= curfile;
+	
+	return key &amp; 0xff;
+}
+
+Decrypting a name
+...
+for(x = 0; x &lt; NPAEntry[i].nlength; x++)
+{
+	NPAEntry[i].filename[x] += crypt(x,i);
+}
+...
+
+Encrypting a name
+...
+for(x = 0; x &lt; NPAEntry[i].nlength; x++)
+{
+	encname[x] = NPAEntry[i].filename[x] - crypt(x,i);
+}
+...
+</pre>
+It loops for each byte of the name and adds the output of crypt() to the current byte to get the decrypted byte.
+<br>
+<br>
+<a name="dataenc"></a>
+<h4>Data encryption</h4>
+This one was sorta spread out between places so I tried my best to gather it all up.<br>
+<pre>Prepare Key 1
+00402020  /$ 56             PUSH ESI
+00402021  |. 8BF0           MOV ESI,EAX
+00402023  |. 8A06           MOV AL,BYTE PTR DS:[ESI]
+00402025  |. 84C0           TEST AL,AL
+00402027  |. BA 21436587    MOV EDX,87654321
+0040202C  |. 74 10          JE SHORT Muramasa.0040203E
+0040202E  |. 8BCE           MOV ECX,ESI
+00402030  |&gt; 0FB6C0         /MOVZX EAX,AL
+00402033  |. 83C1 01        |ADD ECX,1
+00402036  |. 2BD0           |SUB EDX,EAX
+00402038  |. 8A01           |MOV AL,BYTE PTR DS:[ECX]
+0040203A  |. 84C0           |TEST AL,AL
+0040203C  |.^75 F2          \JNZ SHORT Muramasa.00402030
+0040203E  |&gt; 8BC6           MOV EAX,ESI
+00402040  |. 8D70 01        LEA ESI,DWORD PTR DS:[EAX+1]
+00402043  |&gt; 8A08           /MOV CL,BYTE PTR DS:[EAX]
+00402045  |. 83C0 01        |ADD EAX,1
+00402048  |. 84C9           |TEST CL,CL
+0040204A  |.^75 F7          \JNZ SHORT Muramasa.00402043
+0040204C  |. 2BC6           SUB EAX,ESI
+0040204E  |. 0FAFC2         IMUL EAX,EDX
+00402051  |. 5E             POP ESI
+00402052  \. C3             RETN
+
+Prepare the rest of the key
+00401C2C  |. E8 EF030000    |CALL Muramasa.00402020
+00401C31  |. 8BD8           |MOV EBX,EAX
+00401C33  |. 8BCF           |MOV ECX,EDI
+00401C35  |. 895D 2C        |MOV DWORD PTR SS:[EBP+2C],EBX
+00401C38  |. 8D41 01        |LEA EAX,DWORD PTR DS:[ECX+1]
+00401C3B  |. EB 03          |JMP SHORT Muramasa.00401C40
+00401C3D  |  8D49 00        |LEA ECX,DWORD PTR DS:[ECX]
+00401C40  |&gt; 8A11           |/MOV DL,BYTE PTR DS:[ECX]
+00401C42  |. 83C1 01        ||ADD ECX,1
+00401C45  |. 84D2           ||TEST DL,DL
+00401C47  |.^75 F7          |\JNZ SHORT Muramasa.00401C40
+00401C49  |. 2BC8           |SUB ECX,EAX
+00401C4B  |. 8BD1           |MOV EDX,ECX
+00401C4D  |. 8B4D 20        |MOV ECX,DWORD PTR SS:[EBP+20]
+00401C50  |. 81C2 00100000  |ADD EDX,1000
+00401C56  |. 3BCA           |CMP ECX,EDX
+00401C58  |. 72 17          |JB SHORT Muramasa.00401C71
+00401C5A  |. 8BCF           |MOV ECX,EDI
+00401C5C  |. 8D41 01        |LEA EAX,DWORD PTR DS:[ECX+1]
+00401C5F  |. 90             |NOP
+00401C60  |&gt; 8A11           |/MOV DL,BYTE PTR DS:[ECX]
+00401C62  |. 83C1 01        ||ADD ECX,1
+00401C65  |. 84D2           ||TEST DL,DL
+00401C67  |.^75 F7          |\JNZ SHORT Muramasa.00401C60
+00401C69  |. 2BC8           |SUB ECX,EAX
+00401C6B  |. 81C1 00100000  |ADD ECX,1000
+00401C71  |&gt; 894D 10        |MOV DWORD PTR SS:[EBP+10],ECX
+00401C74  |. 8B46 0C        |MOV EAX,DWORD PTR DS:[ESI+C]
+00401C77  |. 0FAF46 08      |IMUL EAX,DWORD PTR DS:[ESI+8]
+00401C7B  |. 03C3           |ADD EAX,EBX
+00401C7D  |. 0FAF45 24      |IMUL EAX,DWORD PTR SS:[EBP+24]
+00401C81  |. 8945 14        |MOV DWORD PTR SS:[EBP+14],EAX
+00401C84  |. 8B4424 14      |MOV EAX,DWORD PTR SS:[ESP+14]
+00401C88  |. 83C0 01        |ADD EAX,1
+00401C8B  |. 3B46 14        |CMP EAX,DWORD PTR DS:[ESI+14]
+
+Decrypt the byte
+00401D91   &gt; 0FB61438       MOVZX EDX,BYTE PTR DS:[EAX+EDI]
+00401D95   . 8A92 F83C5300  MOV DL,BYTE PTR DS:[EDX+533CF8]
+00401D9B   . 2AD1           SUB DL,CL
+00401D9D   . 2AD0           SUB DL,AL
+00401D9F   . 881438         MOV BYTE PTR DS:[EAX+EDI],DL
+00401DA2   . 83C0 01        ADD EAX,1
+00401DA5   . 3BC5           CMP EAX,EBP
+00401DA7   .^72 E8          JB SHORT Muramasa.00401D91
+</pre>
+And here's my version:
+<pre>int crypt2(int curnum, char *name)
+{
+	int i=0;
+	int key1 = 0x87654321;
+	int key2 = NPAHead.key1*NPAHead.key2;
+	int key  = 0;
+	
+	for(i = 0; name[i] != 0; i++)
+	{
+		key1 -= name[i];
+	}
+
+	key  = key1 * i;
+	key += key2;
+	key *= NPAEntry[curnum].origsize;
+	
+	return key&amp;0xff;
+}
+
+...
+if(NPAHead.encrypt == 1)
+{
+	int key = crypt2(i,NPAEntry[i].filename);
+	int x = 0;
+	
+	for(x = 0; x &lt; NPAEntry[i].compsize &amp;&amp; x &lt; 0x1000 + strlen(NPAEntry[i].filename); x++)
+	{		
+		buffer[x] = (keytbl[NPAHead.gameid][buffer[x]]-key)-x;
+	}
+}
+...
+</pre>
+Only the first 0x1000 + (length of filename) bytes of each file are 
+encrypted. Use the key table to lookup the current byte you're trying to
+ decrypt, then subtract that byte minus key, then subtract the current 
+byte number to get the decrypted byte. The keys required can be found in
+ nipa.h.<br>
+<a href="#top">Top</a><br>
+<br>
+<a name="patches"></a>
+<h2>Creating Patches</h2>
+Creating patches for N2System is easy. It parses every file in the 
+directory and checks for the NPA header. The order goes something like 
+this:<br>
+nss-patch.npa -&gt; nss.npa -&gt; nss1.npa<br>
+This would read in the files from nss-patch.npa, then nss.npa, then 
+nss1.npa. The engine does not read in files from the later NPAs if 
+they're present in the first NPA.<br>
+<a href="#top">Top</a><br>
+<br>
+<a name="gamelist"></a>
+<h2>Game List</h2>
+Nitro+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Chaos;Head - V3<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Chaos;Head Trial 1 - V3<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Chaos;Head Trial 2 - V3<br>
+&nbsp;&nbsp;&nbsp;&nbsp;FullMetalDaemon MURAMASA Trial - V3<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Sumaga - V3<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Sumaga Special - V3<br>
+Nitro+ CHiRAL<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Lamento -Beyond the Void- - V1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;sweet pool - V3<br>
+<br>
+Unsupported Games:<br>
+Nitro+ CHiRAL<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Lamento -Beyond the Void- Trial - V1 <i>(?)</i><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Zoku Satsuriku no Django - V2<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Zoku Satsuriku no Django Trial - V2<br>
+<a href="#top">Top</a><br>
+<hr>
+<i>Last updated: 8:49 PM 6/26/2009
+
+
+</i></body></html>
