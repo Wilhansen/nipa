@@ -301,7 +301,7 @@ void extractnpa(int i, int pos, TCHAR *destination)
 		exit(1);
 	}
 
-	outfile = _tfopen(destination,_T("w")); 
+	outfile = _tfopen(destination,_T("wb")); 
 	if ( !outfile ) {
 		printf("--WARNING: Cannot write file. %s",strerror(errno));
 		return;
