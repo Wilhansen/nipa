@@ -350,6 +350,7 @@ void extractnpa(int i, int pos, TCHAR *destination)
 void createnpa(int count, TCHAR **inarr)
 {
 	int i = 0, x = 0;
+	char encname[MAX_PATH];
 
 	_tcscat(origpath,inarr[0]);
 	_tcscat(origpath,_T("\\*"));
@@ -384,8 +385,6 @@ void createnpa(int count, TCHAR **inarr)
 	/* Write the file table */
 	for(i = 0; i < NPAHead.totalcount; i++)
 	{
-		char *encname = (char*)calloc(NPAEntry[i].nlength,sizeof(char));
-
 		for(x = 0; x < NPAEntry[i].nlength; x++)
 		{
 			encname[x] = NPAEntry[i].filename[x] - crypt(x,i);
@@ -398,11 +397,11 @@ void createnpa(int count, TCHAR **inarr)
 		fwrite(&NPAEntry[i].offset,1,4,outfile);
 		fwrite(&NPAEntry[i].compsize,1,4,outfile);
 		fwrite(&NPAEntry[i].origsize,1,4,outfile);
-
-		free(encname);
 	}
 
 	{
+		int bufferSz = 0, zbufferSz = 0;
+		Byte *buffer = 0, *zbuffer = 0; /* Second buffer for zlib */
 		const int origpathLen = _tcslen(origpath);
 		/* Write the file data */
 		for(i = 0; i < NPAHead.totalcount; i++)
@@ -422,18 +421,24 @@ void createnpa(int count, TCHAR **inarr)
 				infile = _tfopen(tempstr,_T("rb"));
 				if(infile)
 				{
-					Byte *buffer = (Byte*)calloc(NPAEntry[i].origsize,sizeof(Byte));
-
+					if ( bufferSz < NPAEntry[i].origsize ) {
+						free(buffer);
+						buffer = (Byte*)calloc(NPAEntry[i].origsize,sizeof(Byte));
+						bufferSz = NPAEntry[i].origsize;
+					}
+					
 					fread(buffer,1,NPAEntry[i].origsize,infile);
 
 					if(NPAHead.compress == 1)
 					{
-						Byte *zbuffer = (Byte*)calloc(NPAEntry[i].origsize,sizeof(Byte)); /* Second buffer for zlib */
+						if ( zbufferSz < NPAEntry[i].origsize ) {
+							free(zbuffer);
+							zbuffer = (Byte*)calloc(NPAEntry[i].origsize,sizeof(Byte));
+							zbufferSz = NPAEntry[i].origsize;
+						}
 
 						compress(zbuffer,&NPAEntry[i].compsize,buffer,NPAEntry[i].origsize);
 						fwrite(zbuffer,1,NPAEntry[i].compsize,outfile); /* I feel there might be a better way to do this... */
-
-						free(zbuffer);
 					}
 					else
 					{
@@ -441,7 +446,6 @@ void createnpa(int count, TCHAR **inarr)
 					}
 
 					fclose(infile);
-					free(buffer);
 				}
 				else
 				{
@@ -449,6 +453,8 @@ void createnpa(int count, TCHAR **inarr)
 				}
 			}
 		}
+		free(buffer);
+		free(zbuffer);
 	}
 
 	/*
@@ -487,7 +493,6 @@ void addentry(TCHAR *path, TCHAR *name, int id, int type, int subdir)
 	int i = 0;
 	FILE *tempf;
 	int pathLen = _tcslen(path);
-	int a = sizeof(*NPAEntry);
 	temp2 = (TCHAR*)calloc(pathLen+_tcslen(name)+1,sizeof(TCHAR));
 	NPAEntry = realloc(NPAEntry,(NPAHead.totalcount+1)*0x1c); /* Don't remove this +1 here, it causes bad things to happen as I found out at 6 in the morning */
 	NPAEntry[NPAHead.totalcount].compsize = 0;
@@ -571,6 +576,7 @@ void addentry(TCHAR *path, TCHAR *name, int id, int type, int subdir)
 	}
 
 	NPAHead.totalcount++;
+	free(temp2);
 }
 
 void parsedir(TCHAR *path)
