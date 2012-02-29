@@ -42,10 +42,18 @@ int _tmain(int argc, TCHAR **argv)
 				mode = MODE_EXTRACT;
 				break;
 			case _T('c'):
-				if(argc < 4)
-				{
-					printf("Invalid arguments for -c");
-					return 1;
+				if ( encryption ) {
+					if(argc < 5)
+					{
+						printf("Invalid arguments for -gc");
+						return 1;
+					}
+				} else {
+					if(argc < 4)
+					{
+						printf("Invalid arguments for -c");
+						return 1;
+					}
 				}
 				mode = MODE_CREATE;
 				break;
@@ -56,10 +64,18 @@ int _tmain(int argc, TCHAR **argv)
 				NPAHead.compress = 1;
 				break;
 			case _T('g'):
-				if(argc < 4)
-				{
-					printf("Invalid arguments for -g");
-					return 1;
+				if ( mode == MODE_CREATE ) {
+					if(argc < 5)
+					{
+						printf("Invalid arguments for -cg");
+						return 1;
+					}
+				} else {
+					if(argc < 4)
+					{
+						printf("Invalid arguments for -g");
+						return 1;
+					}
 				}
 				encryption = 1;
 				break;
@@ -130,7 +146,7 @@ int _tmain(int argc, TCHAR **argv)
 	}
 	else if(mode == MODE_CREATE)
 	{
-		createnpa(argc-2,argv+2); /* Get rid of the name and options */
+		createnpa(argc-2,argv+2,encryption); /* Get rid of the name and options */
 	}
 
 	return 0;
@@ -315,12 +331,12 @@ void extractnpa(int i, int pos, TCHAR *destination)
 		int x = 0;
 		int len = 0x1000;
 
-		if(NPAHead.gameid!=8 || NPAHead.gameid==9)
+		if(NPAHead.gameid!=LAMENTO || NPAHead.gameid==LAMENTOTR)
 			len += strlen(NPAEntry[i].filename);
 
 		for(x = 0; x < NPAEntry[i].compsize && x < len; x++)
 		{
-			if(NPAHead.gameid==8 || NPAHead.gameid==9)
+			if(NPAHead.gameid==LAMENTO || NPAHead.gameid==LAMENTOTR)
 				buffer[x] = keytbl[NPAHead.gameid][buffer[x]]-key;
 			else
 				buffer[x] = (keytbl[NPAHead.gameid][buffer[x]]-key)-x;
@@ -347,10 +363,11 @@ void extractnpa(int i, int pos, TCHAR *destination)
 	fseek(infile,pos,SEEK_SET);
 }
 
-void createnpa(int count, TCHAR **inarr)
+void createnpa(int count, TCHAR **inarr, int encrypt)
 {
 	int i = 0, x = 0;
 	char encname[MAX_PATH];
+	unsigned char encTable[0x100];
 
 	_tcscat(origpath,inarr[0]);
 	_tcscat(origpath,_T("\\*"));
@@ -362,8 +379,14 @@ void createnpa(int count, TCHAR **inarr)
 	strcat(NPAHead.head,"NPA\x01\x00\x00\x00");
 
 	NPAHead.key1 = 0x4147414E;
-	NPAHead.key2 = 0x21214F54;
-	NPAHead.encrypt = 0;
+	NPAHead.key2 = 0x21214f54;
+	NPAHead.encrypt = encrypt;
+	if ( encrypt ) {
+		size_t i;
+		//build reverse key table for encryption
+		for (i = 0; i < sizeof(encTable)/sizeof(encTable[0]); ++i)
+			encTable[keytbl[NPAHead.gameid][i]] = i;
+	}
 	NPAHead.filecount = (NPAHead.totalcount-NPAHead.foldercount);
 	NPAHead.start += NPAHead.totalcount*0x15; /* DO NOT CHANGE */
 	NPAEntry[0].offset = 0; /* Must initialize the first offset or it'll fuck everything up. */
@@ -421,6 +444,9 @@ void createnpa(int count, TCHAR **inarr)
 				infile = _tfopen(tempstr,_T("rb"));
 				if(infile)
 				{
+					Byte *writeSrc = 0;
+					int writeSrcBytes = 0;
+
 					if ( bufferSz < NPAEntry[i].origsize ) {
 						free(buffer);
 						buffer = (Byte*)calloc(NPAEntry[i].origsize,sizeof(Byte));
@@ -436,14 +462,33 @@ void createnpa(int count, TCHAR **inarr)
 							zbuffer = (Byte*)calloc(NPAEntry[i].origsize,sizeof(Byte));
 							zbufferSz = NPAEntry[i].origsize;
 						}
-
 						compress(zbuffer,&NPAEntry[i].compsize,buffer,NPAEntry[i].origsize);
-						fwrite(zbuffer,1,NPAEntry[i].compsize,outfile); /* I feel there might be a better way to do this... */
+						writeSrc = zbuffer;
+						writeSrcBytes = NPAEntry[i].compsize;
 					}
 					else
 					{
-						fwrite(buffer,1,NPAEntry[i].origsize,outfile);
+						writeSrc = buffer;
+						writeSrcBytes = NPAEntry[i].origsize;
 					}
+					
+					if ( NPAHead.encrypt ) {
+						int key = crypt2(i, NPAEntry[i].filename);
+						int x = 0;
+						int len = 0x1000;
+
+						if(NPAHead.gameid!=LAMENTO || NPAHead.gameid==LAMENTOTR)
+							len += strlen(NPAEntry[i].filename);
+
+						for(x = 0; x < writeSrcBytes && x < len; x++)
+						{
+							if(NPAHead.gameid==LAMENTO || NPAHead.gameid==LAMENTOTR)
+								writeSrc[x] = encTable[(writeSrc[x] + key) & 0xFF];
+							else
+								writeSrc[x] = encTable[(writeSrc[x] + x + key) & 0xFF];
+						}
+					}
+					fwrite(writeSrc,1,writeSrcBytes,outfile);
 
 					fclose(infile);
 				}
