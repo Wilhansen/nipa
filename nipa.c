@@ -331,7 +331,7 @@ void extractnpa(int i, int pos, TCHAR *destination)
 		int x = 0;
 		int len = 0x1000;
 
-		if(NPAHead.gameid!=LAMENTO || NPAHead.gameid==LAMENTOTR)
+		if(NPAHead.gameid!=LAMENTO && NPAHead.gameid!=LAMENTOTR)
 			len += strlen(NPAEntry[i].filename);
 
 		for(x = 0; x < NPAEntry[i].compsize && x < len; x++)
@@ -477,7 +477,7 @@ void createnpa(int count, TCHAR **inarr, int encrypt)
 						int x = 0;
 						int len = 0x1000;
 
-						if(NPAHead.gameid!=LAMENTO || NPAHead.gameid==LAMENTOTR)
+						if(NPAHead.gameid!=LAMENTO && NPAHead.gameid!=LAMENTOTR)
 							len += strlen(NPAEntry[i].filename);
 
 						for(x = 0; x < writeSrcBytes && x < len; x++)
