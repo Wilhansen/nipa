@@ -19,6 +19,7 @@ For the uninitiated, this is a non-interactive command-line program so this is b
 * Creation
     * `-c (folder) (output file)` — Create archive
     * `-z` — Compress files
+    * `-cg (folder) (output file) (id)` — Create encrypted archive using game id.
 
 **DO NOT** compress a CG folder. There is little change in size by doing so and it messes up the engine. This is a problem with the engine and Nitro+ doesn't compress their CG files because of it.
 
@@ -27,6 +28,7 @@ For the uninitiated, this is a non-interactive command-line program so this is b
 `-xg nss.npa MuramasaTr` — Extract nss.npa into the folder "nss" using the Muramasa Trial encryption  
 `-c nss nss.npa` — Create an archive out of the folder "nss"  
 `-cz nss nss.npa` — Create a compressed archive out of the folder "nss"
+`-czg nss nss.npa Lamento` — Create a compressed archive of the folder "nss" then use Lamento encryption.
 
 ## Supported Games
 Game IDs in `code` formatting.
