@@ -27,7 +27,7 @@ For the uninitiated, this is a non-interactive command-line program so this is b
 `-x nss.npa` — Extract nss.npa into the folder "nss"  
 `-xg nss.npa MuramasaTr` — Extract nss.npa into the folder "nss" using the Muramasa Trial encryption  
 `-c nss nss.npa` — Create an archive out of the folder "nss"  
-`-cz nss nss.npa` — Create a compressed archive out of the folder "nss"
+`-cz nss nss.npa` — Create a compressed archive out of the folder "nss"  
 `-czg nss nss.npa Lamento` — Create a compressed archive of the folder "nss" then use Lamento encryption.
 
 ## Supported Games
