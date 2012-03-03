@@ -42,15 +42,16 @@ Game IDs in `code` formatting.
     * FullMetalDaemon MURAMASA Trial `MuramasaTr`
     * Kikokugai `Kikokugai`
     * Sumaga `Sumaga`
+	* Sumaga 3% `Sumaga3P`
     * Sumaga Special `SumagaSP`
     * Demonbane The Best ` Demonbane`
     * Axanael/Axanael Trial `Axanael`
-    * SonicomiTr1 `SonicomiTr2`
+	* Sonicomi `Sonicomi`
+    * Sonicomi Trial 2 `SonicomiTr2`
     * Zoku Satsuriku no Django `Django`
 * Nitro+ CHiRAL
     * Lamento -Beyond the Void- `Lamento`
     * sweet pool `sweetpool`
-
 
 ## Credits
 Minagi from the [NovelNews.net forum](http://forums.novelnews.net/showthread.php?t=35621) for reverse-engineering the npa format and writing the original code.

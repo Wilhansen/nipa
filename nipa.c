@@ -118,8 +118,10 @@ int _tmain(int argc, TCHAR **argv)
 			_T("Nitro+ - FullMetalDaemon MURAMASA Janen Hen - MuramasaAD\n")
 			_T("Nitro+ - FullMetalDaemon MURAMASA Trial - MuramasaTr\n")
 			_T("Nitro+ - Kikokugai - Kikokugai\n")
-			_T("Nitro+ - SonicomiTr2 - SonicomiTr2\n")
+			_T("Nitro+ - Sonicomi - Sonicomi\n")
+			_T("Nitro+ - Sonicomi Trial 2 - SonicomiTr2\n")
 			_T("Nitro+ - Sumaga - Sumaga\n")
+			_T("Nitro+ - Sumaga3P - Sumaga 3%% Trial\n")
 			_T("Nitro+ - Sumaga Special - SumagaSP\n")
 			_T("Nitro+ - Zoku Satsuriku no Django - Django\n")
 			_T("Nitro+ - Zoku Satsuriku no Django Trial - DjangoTr *NOT WORKING*\n")
@@ -207,7 +209,8 @@ int crypt2(int curnum, char *name)
 
 	if(NPAHead.gameid == AXANAEL ||
 		NPAHead.gameid == KIKOKUGAI ||
-		NPAHead.gameid == SONICOMITR2)
+		NPAHead.gameid == SONICOMITR2 ||
+		NPAHead.gameid == SONICOMI)
 		key1 = 0x20101118;
 	else
 		key1 = 0x87654321;
