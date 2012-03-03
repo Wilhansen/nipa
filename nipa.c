@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <windows.h>
+#include <io.h>
+#include <fcntl.h>
 #include "zlib/zlib.h"
 #include "nipa.h"
 
@@ -25,7 +27,10 @@ int _tmain(int argc, TCHAR **argv)
 {
 	int i = 0, encryption = 0, mode = MODE_HELP;
 
-	printf("nipa\n\n");
+#ifdef _UNICODE
+	_setmode(_fileno(stdout), _O_WTEXT);
+#endif
+	_tprintf(_T("nipa\n\n"));
 
 	if(argc > 1 && _tcslen(argv[1]) > 1 && argv[1][i++] == _T('-'))
 	{    
@@ -36,7 +41,7 @@ int _tmain(int argc, TCHAR **argv)
 			case _T('x'):
 				if(argc < 3)
 				{
-					printf("Invalid arguments for -x");
+					_tprintf(_T("Invalid arguments for -x"));
 					return 1;
 				}
 				mode = MODE_EXTRACT;
@@ -45,13 +50,13 @@ int _tmain(int argc, TCHAR **argv)
 				if ( encryption ) {
 					if(argc < 5)
 					{
-						printf("Invalid arguments for -gc");
+						_tprintf(_T("Invalid arguments for -gc"));
 						return 1;
 					}
 				} else {
 					if(argc < 4)
 					{
-						printf("Invalid arguments for -c");
+						_tprintf(_T("Invalid arguments for -c"));
 						return 1;
 					}
 				}
@@ -67,20 +72,20 @@ int _tmain(int argc, TCHAR **argv)
 				if ( mode == MODE_CREATE ) {
 					if(argc < 5)
 					{
-						printf("Invalid arguments for -cg");
+						_tprintf(_T("Invalid arguments for -cg"));
 						return 1;
 					}
 				} else {
 					if(argc < 4)
 					{
-						printf("Invalid arguments for -g");
+						_tprintf(_T("Invalid arguments for -g"));
 						return 1;
 					}
 				}
 				encryption = 1;
 				break;
 			default:
-				printf("Unknown argument '%c', ignoring.\n",argv[1][i-1]);
+				_tprintf(_T("Unknown argument '%c', ignoring.\n",argv[1][i-1]));
 				break;
 			}
 		}
@@ -88,39 +93,39 @@ int _tmain(int argc, TCHAR **argv)
 
 	if(mode==MODE_HELP)
 	{
-		printf("usage:\n"\
-			"General\n"\
-			"-h - Help. Displays this information.\n\n"\
-			"Extraction\n"\
-			"-x (file) - Extract NPA archive\n"\
-			"-g (id) - Game ID for encryption (if applicable). Defaults to ChaosHead if no encryption is entered\n\n"\
-			"Creation\n"\
-			"-c (folder) (output file) - Create archive\n"\
-			"-z - Compress files\n\n"\
-			"Examples\n"\
-			"-x nss.npa - Extract nss.npa into the folder \"nss\"\n"\
-			"-xg nss.npa MuramasaTr - Extract nss.npa into the folder \"nss\" using the Muramasa Trial encryption\n"\
-			"-c nss nss.npa - Create an archive out of the folder \"nss\"\n"
-			"-cz nss nss.npa - Create a compressed archive out of the folder \"nss\"\n\n"\
-			"Maker - Name - ID\n"\
-			"Nitro+ - Axanael - Axanael\n"\
-			"Nitro+ - Axanael Trial - Axanael\n"\
-			"Nitro+ - Chaos;Head - ChaosHead\n"\
-			"Nitro+ - Chaos;Head Trial 1 - ChaosHeadTr1\n"\
-			"Nitro+ - Chaos;Head Trial 2 - ChaosHeadTr2\n"\
-			"Nitro+ - Demonbane The Best - Demonbane\n"\
-			"Nitro+ - FullMetalDaemon MURAMASA - Muramasa\n"\
-			"Nitro+ - FullMetalDaemon MURAMASA Janen Hen - MuramasaAD\n"\
-			"Nitro+ - FullMetalDaemon MURAMASA Trial - MuramasaTr\n"\
-			"Nitro+ - Kikokugai - Kikokugai\n"\
-			"Nitro+ - SonicomiTr2 - SonicomiTr2\n"\
-			"Nitro+ - Sumaga - Sumaga\n"\
-			"Nitro+ - Sumaga Special - SumagaSP\n"\
-			"Nitro+ - Zoku Satsuriku no Django - Django\n"\
-			"Nitro+ - Zoku Satsuriku no Django Trial - DjangoTr *NOT WORKING*\n"\
-			"Nitro+ ChiRAL - Lamento -Beyond the Void- - Lamento\n"\
-			"Nitro+ ChiRAL - Lamento -Beyond the Void- Trial - LamentoTr *UNKNOWN*\n"\
-			"Nitro+ ChiRAL - sweet pool - sweetpool\n",argv[0]);
+		_tprintf(_T("usage:\n")
+			_T("General\n")
+			_T("\t-h - Help. Displays this information.\n\n")
+			_T("Extraction\n")
+			_T("\t-x (file) - Extract NPA archive\n")
+			_T("\t-g (id) - Game ID for encryption (if applicable). Defaults to ChaosHead if no encryption is entered\n\n")
+			_T("Creation\n")
+			_T("\t-c (folder) (output file) - Create archive\n")
+			_T("\t-z - Compress files\n\n")
+			_T("Examples\n")
+			_T("\t-x nss.npa - Extract nss.npa into the folder \"nss\"\n")
+			_T("\t-xg nss.npa MuramasaTr - Extract nss.npa into the folder \"nss\" using the Muramasa Trial encryption\n")
+			_T("\t-c nss nss.npa - Create an archive out of the folder \"nss\"\n")
+			_T("\t-cz nss nss.npa - Create a compressed archive out of the folder \"nss\"\n\n")
+			_T("Maker - Name - ID\n")
+			_T("Nitro+ - Axanael - Axanael\n")
+			_T("Nitro+ - Axanael Trial - Axanael\n")
+			_T("Nitro+ - Chaos;Head - ChaosHead\n")
+			_T("Nitro+ - Chaos;Head Trial 1 - ChaosHeadTr1\n")
+			_T("Nitro+ - Chaos;Head Trial 2 - ChaosHeadTr2\n")
+			_T("Nitro+ - Demonbane The Best - Demonbane\n")
+			_T("Nitro+ - FullMetalDaemon MURAMASA - Muramasa\n")
+			_T("Nitro+ - FullMetalDaemon MURAMASA Janen Hen - MuramasaAD\n")
+			_T("Nitro+ - FullMetalDaemon MURAMASA Trial - MuramasaTr\n")
+			_T("Nitro+ - Kikokugai - Kikokugai\n")
+			_T("Nitro+ - SonicomiTr2 - SonicomiTr2\n")
+			_T("Nitro+ - Sumaga - Sumaga\n")
+			_T("Nitro+ - Sumaga Special - SumagaSP\n")
+			_T("Nitro+ - Zoku Satsuriku no Django - Django\n")
+			_T("Nitro+ - Zoku Satsuriku no Django Trial - DjangoTr *NOT WORKING*\n")
+			_T("Nitro+ ChiRAL - Lamento -Beyond the Void- - Lamento\n")
+			_T("Nitro+ ChiRAL - Lamento -Beyond the Void- Trial - LamentoTr *UNKNOWN*\n")
+			_T("Nitro+ ChiRAL - sweet pool - sweetpool\n"),argv[0]);
 
 		return 0;
 	}
@@ -242,7 +247,7 @@ void parsenpa(TCHAR *input, int encryption)
 	fread(NPAHead.head,1,7,infile);
 	if(strncmp("NPA\x01",NPAHead.head,4) == 0)
 	{
-		printf("Parsing NPA...\n");
+		_tprintf(_T("Parsing NPA...\n"));
 
 		fread(&NPAHead.key1,1,4,infile);
 		fread(&NPAHead.key2,1,4,infile);
@@ -256,7 +261,7 @@ void parsenpa(TCHAR *input, int encryption)
 
 		if(NPAHead.encrypt == 1 && encryption == 0) /* Late night, thought I broke something. Turns out I didn't set an encryption. Fuck. A check so people won't make the same mistake. */
 		{
-			printf("This is an encrypted archive. Please read the help information and select an encryption.\n");
+			_tprintf(_T("This is an encrypted archive. Please read the help information and select an encryption.\n"));
 			exit(1);
 		}
 
@@ -302,7 +307,7 @@ void parsenpa(TCHAR *input, int encryption)
 	}
 	else
 	{
-		printf("Invalid NPA archive\n");
+		_tprintf(_T("Invalid NPA archive\n"));
 	}
 }
 
@@ -313,13 +318,13 @@ void extractnpa(int i, int pos, TCHAR *destination)
 
 	if(!buffer)
 	{
-		printf("Could not allocate %d bytes of memory for buffer\n",NPAEntry[i].compsize);
+		_tprintf(_T("Could not allocate %d bytes of memory for buffer\n"),NPAEntry[i].compsize);
 		exit(1);
 	}
 
 	outfile = _tfopen(destination,_T("wb")); 
 	if ( !outfile ) {
-		printf("--WARNING: Cannot write file. %s",strerror(errno));
+		_tprintf(_T("--WARNING: Cannot write file. %s"),_tcserror(errno));
 		return;
 	}
 	fseek(infile,NPAEntry[i].offset+NPAHead.start+0x29,SEEK_SET);    
@@ -372,7 +377,7 @@ void createnpa(int count, TCHAR **inarr, int encrypt)
 	_tcscat(origpath,inarr[0]);
 	_tcscat(origpath,_T("\\*"));
 
-	printf("Parsing directory structure, this could take a moment...\n");
+	_tprintf(_T("Parsing directory structure, this could take a moment...\n"));
 	parsedir(origpath);
 
 	/* Prepare the struct */
