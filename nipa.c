@@ -128,7 +128,9 @@ int _tmain(int argc, TCHAR **argv)
 			_T("Nitro+ - Zoku Satsuriku no Django Trial - DjangoTr *NOT WORKING*\n")
 			_T("Nitro+ ChiRAL - Lamento -Beyond the Void- - Lamento\n")
 			_T("Nitro+ ChiRAL - Lamento -Beyond the Void- Trial - LamentoTr *UNKNOWN*\n")
-			_T("Nitro+ ChiRAL - sweet pool - sweetpool\n"),argv[0]);
+			_T("Nitro+ ChiRAL - sweet pool - sweetpool\n"),
+			_T("Nitro+ ChiRAL - Dramatical Murder - DramaticalMurder\n"),
+			argv[0]);
 
 		return 0;
 	}
@@ -208,13 +210,18 @@ int crypt2(int curnum, char *name)
 	int key2 = NPAHead.key1 * NPAHead.key2;
 	int key = 0;
 
-	if(NPAHead.gameid == AXANAEL ||
-		NPAHead.gameid == KIKOKUGAI ||
-		NPAHead.gameid == SONICOMITR2 ||
-		NPAHead.gameid == SONICOMI)
-		key1 = 0x20101118;
-	else
-		key1 = 0x87654321;
+	switch(NPAHead.gameid) {
+		case AXANAEL:
+		case KIKOKUGAI:
+		case SONICOMITR2:
+		case SONICOMI:
+		case DRAMATICALMURDER:
+			key1 = 0x20101118;
+			break;
+		default:
+			key1 = 0x87654321;
+			break;
+	}
 
 	for(i = 0; name[i] != 0; i++)
 		key1 -= name[i];
