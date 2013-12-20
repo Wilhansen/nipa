@@ -41,7 +41,9 @@ Game IDs in `code` formatting.
     * FullMetalDaemon MURAMASA Janen Hen `MuramasaAD`
     * FullMetalDaemon MURAMASA Trial `MuramasaTr`
     * Guilty Crown Lost Xmas Trailer `LostXTrailer`
+    * Guilty Crown Lost Xmas `LostX`
     * Kikokugai `Kikokugai`
+    * Kimi to Kajono to Kanojo no Koi `Totono`
     * Sumaga `Sumaga`
 	* Sumaga 3% `Sumaga3P`
     * Sumaga Special `SumagaSP`

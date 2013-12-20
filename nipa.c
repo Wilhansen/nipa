@@ -117,6 +117,7 @@ int _tmain(int argc, TCHAR **argv)
 			_T("Nitro+ - FullMetalDaemon MURAMASA - Muramasa\n")
 			_T("Nitro+ - FullMetalDaemon MURAMASA Janen Hen - MuramasaAD\n")
 			_T("Nitro+ - FullMetalDaemon MURAMASA Trial - MuramasaTr\n")
+			_T("Nitro+ - Guilty Crown Lost Xmas - LostX\n")
 			_T("Nitro+ - Guilty Crown Lost Xmas Trailer - LostXTrailer\n")
 			_T("Nitro+ - Kikokugai - Kikokugai\n")
 			_T("Nitro+ - Sonicomi - Sonicomi\n")
@@ -124,6 +125,7 @@ int _tmain(int argc, TCHAR **argv)
 			_T("Nitro+ - Sumaga - Sumaga\n")
 			_T("Nitro+ - Sumaga3P - Sumaga 3%% Trial\n")
 			_T("Nitro+ - Sumaga Special - SumagaSP\n")
+			_T("Nitro+ - Kimi to Kajono to Kanojo no Koi - Totono\n")
 			_T("Nitro+ - Zoku Satsuriku no Django - Django\n")
 			_T("Nitro+ - Zoku Satsuriku no Django Trial - DjangoTr *NOT WORKING*\n")
 			_T("Nitro+ ChiRAL - Lamento -Beyond the Void- - Lamento\n")
@@ -215,8 +217,12 @@ int crypt2(int curnum, char *name)
 		case KIKOKUGAI:
 		case SONICOMITR2:
 		case SONICOMI:
+		case LOSTX:
 		case DRAMATICALMURDER:
 			key1 = 0x20101118;
+			break;
+		case TOTONO:
+			key1 = 0x12345678;
 			break;
 		default:
 			key1 = 0x87654321;
@@ -352,10 +358,20 @@ void extractnpa(int i, int pos, TCHAR *destination)
 
 		for(x = 0; x < NPAEntry[i].compsize && x < len; x++)
 		{
-			if(NPAHead.gameid==LAMENTO || NPAHead.gameid==LAMENTOTR)
+			if(NPAHead.gameid==LAMENTO || NPAHead.gameid==LAMENTOTR) {
 				buffer[x] = keytbl[NPAHead.gameid][buffer[x]]-key;
-			else
+			} else if(NPAHead.gameid==TOTONO) {
+				unsigned char r = buffer[x];
+				char r2;
+				r = keytbl[NPAHead.gameid][r];
+				r = keytbl[NPAHead.gameid][r];
+				r = keytbl[NPAHead.gameid][r];
+				r = ~r;
+				r2 = (char)r - key - x;
+				buffer[x] = (unsigned char) r2;
+			} else {
 				buffer[x] = (keytbl[NPAHead.gameid][buffer[x]]-key)-x;
+			}
 		}
 	}
 
@@ -363,7 +379,10 @@ void extractnpa(int i, int pos, TCHAR *destination)
 	{
 		char *zbuffer = (char*)calloc(NPAEntry[i].origsize,sizeof(char));
 
-		uncompress(zbuffer,&NPAEntry[i].origsize,buffer,NPAEntry[i].compsize);
+		if(uncompress(zbuffer,&NPAEntry[i].origsize,buffer,NPAEntry[i].compsize) != Z_OK) {
+			_tprintf(_T("Uncompress failed!\n"));
+			exit(1);
+		}
 		fwrite(zbuffer,1,NPAEntry[i].origsize,outfile);
 
 		free(zbuffer);
@@ -498,10 +517,20 @@ void createnpa(int count, TCHAR **inarr, int encrypt)
 
 						for(x = 0; x < writeSrcBytes && x < len; x++)
 						{
-							if(NPAHead.gameid==LAMENTO || NPAHead.gameid==LAMENTOTR)
+							if(NPAHead.gameid==LAMENTO || NPAHead.gameid==LAMENTOTR) {
 								writeSrc[x] = encTable[(writeSrc[x] + key) & 0xFF];
-							else
+							} else if(NPAHead.gameid==TOTONO) {
+								char r = writeSrc[x] + x + key;
+								unsigned char r2;
+								r = ~r;
+								r2 = (unsigned char) r;
+								r2 = encTable[r2];
+								r2 = encTable[r2];
+								r2 = encTable[r2];
+								writeSrc[x] = r2;
+							} else {
 								writeSrc[x] = encTable[(writeSrc[x] + x + key) & 0xFF];
+							}
 						}
 					}
 					fwrite(writeSrc,1,writeSrcBytes,outfile);
