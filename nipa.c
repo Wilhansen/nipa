@@ -132,6 +132,7 @@ int _tmain(int argc, TCHAR **argv)
 			_T("Nitro+ ChiRAL - Lamento -Beyond the Void- Trial - LamentoTr *UNKNOWN*\n")
 			_T("Nitro+ ChiRAL - sweet pool - sweetpool\n"),
 			_T("Nitro+ ChiRAL - Dramatical Murder - DramaticalMurder\n"),
+			_T("Nitro+ ChiRAL - DRAMAtical Murder re:connect - DramaticalMurderRC\n"),
 			argv[0]);
 
 		return 0;
@@ -219,6 +220,7 @@ int crypt2(int curnum, char *name)
 		case SONICOMI:
 		case LOSTX:
 		case DRAMATICALMURDER:
+		case DRAMATICALMURDERRC:
 			key1 = 0x20101118;
 			break;
 		case TOTONO:
