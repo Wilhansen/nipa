@@ -55,7 +55,8 @@ Game IDs in `code` formatting.
 * Nitro+ CHiRAL
     * Lamento -Beyond the Void- `Lamento`
     * sweet pool `sweetpool`
-    * Dramatical Murder `DramaticalMurder`
+    * DRAMAtical Murder `DramaticalMurder`
+	* DRAMAtical Murder re:connect `DramaticalMurderRC`
 
 ## Credits
 Minagi from the [NovelNews.net forum](http://forums.novelnews.net/showthread.php?t=35621) for reverse-engineering the npa format and writing the original code.
