@@ -117,6 +117,7 @@ int _tmain(int argc, TCHAR **argv)
 			_T("Nitro+ - FullMetalDaemon MURAMASA - Muramasa\n")
 			_T("Nitro+ - FullMetalDaemon MURAMASA Janen Hen - MuramasaAD\n")
 			_T("Nitro+ - FullMetalDaemon MURAMASA Trial - MuramasaTr\n")
+			_T("Nitro+ - FullMetalDaemon MURAMASA Shokuzai hen - MuramasaSS\n")
 			_T("Nitro+ - Guilty Crown Lost Xmas - LostX\n")
 			_T("Nitro+ - Guilty Crown Lost Xmas Trailer - LostXTrailer\n")
 			_T("Nitro+ - Kikokugai - Kikokugai\n")
@@ -221,6 +222,7 @@ int crypt2(int curnum, char *name)
 		case LOSTX:
 		case DRAMATICALMURDER:
 		case DRAMATICALMURDERRC:
+		case MURAMASASS:
 			key1 = 0x20101118;
 			break;
 		case TOTONO:
